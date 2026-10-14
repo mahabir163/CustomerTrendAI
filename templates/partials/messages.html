@@ -1,0 +1,12 @@
+{% if messages %}
+<div class="fixed right-4 top-20 z-50 w-full max-w-sm space-y-2" role="region" aria-label="Notifications">
+  {% for message in messages %}
+    <div data-toast role="status"
+         class="flex items-start gap-3 rounded-lg border bg-white p-4 shadow-lg
+                {% if message.level_tag == 'success' %}border-emerald-300{% elif message.level_tag == 'error' %}border-red-300{% elif message.level_tag == 'warning' %}border-amber-300{% else %}border-slate-200{% endif %}">
+      <p class="flex-1 text-sm text-slate-700">{{ message }}</p>
+      <button type="button" data-toast-close class="text-slate-400 hover:text-slate-600" aria-label="Dismiss">&times;</button>
+    </div>
+  {% endfor %}
+</div>
+{% endif %}

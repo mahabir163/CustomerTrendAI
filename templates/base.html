@@ -1,0 +1,80 @@
+{% load static %}<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}{{ page_title|default:"Dashboard" }}{% endblock %} · CustomerTrend AI</title>
+  <link rel="stylesheet" href="{% static 'css/tailwind.css' %}">
+  {% block extra_head %}{% endblock %}
+</head>
+<body class="h-full bg-slate-50 text-slate-800 antialiased">
+
+  <a href="#main" class="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:m-2 focus:rounded focus:bg-white focus:px-3 focus:py-2">Skip to content</a>
+
+  <div class="flex min-h-full">
+
+    <!-- Mobile backdrop -->
+    <div id="sidebar-backdrop" class="fixed inset-0 z-30 hidden bg-slate-900/50 lg:hidden" aria-hidden="true"></div>
+
+    <!-- Sidebar -->
+    <aside id="sidebar"
+           class="fixed inset-y-0 left-0 z-40 flex w-64 -translate-x-full flex-col bg-navy-900 text-slate-300 transition-transform duration-200 lg:sticky lg:top-0 lg:h-screen lg:translate-x-0 lg:shrink-0"
+           aria-label="Primary">
+      <div class="flex h-16 items-center gap-3 border-b border-white/10 px-5">
+        <span class="flex h-9 w-9 items-center justify-center rounded-lg bg-brand-500 text-sm font-bold text-white">CT</span>
+        <span class="text-base font-semibold text-white">CustomerTrend <span class="text-brand-400">AI</span></span>
+      </div>
+
+      <nav class="flex-1 space-y-1 overflow-y-auto px-3 py-4">
+        {% for item in nav_items %}
+          {% if item.url_name == current_url_name %}
+            <a href="{% url item.url_name %}" aria-current="page"
+               class="flex items-center gap-3 rounded-lg bg-white/10 px-3 py-2.5 text-sm font-medium text-white">
+          {% else %}
+            <a href="{% url item.url_name %}"
+               class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-slate-300 transition hover:bg-white/5 hover:text-white">
+          {% endif %}
+              <svg class="h-5 w-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{ item.icon }}"/></svg>
+              {{ item.label }}
+            </a>
+        {% endfor %}
+      </nav>
+
+      <div class="border-t border-white/10 px-5 py-4 text-xs text-slate-400">
+        Customer Trend Intelligence &amp; Analytics
+      </div>
+    </aside>
+
+    <!-- Main column -->
+    <div class="flex min-w-0 flex-1 flex-col">
+      <header class="sticky top-0 z-20 flex h-16 items-center gap-3 border-b border-slate-200 bg-white/90 px-4 backdrop-blur sm:px-6">
+        <button id="sidebar-toggle" type="button"
+                class="rounded-md p-2 text-slate-600 hover:bg-slate-100 lg:hidden"
+                aria-controls="sidebar" aria-expanded="false" aria-label="Open navigation">
+          <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+        </button>
+        <h1 class="truncate text-lg font-semibold text-slate-900">{{ page_title|default:"Dashboard" }}</h1>
+        <div class="ml-auto flex items-center gap-3">
+          {% block header_actions %}{% endblock %}
+          {% if request.user.is_authenticated %}
+            <a href="{% url 'accounts:settings' %}" class="hidden text-sm font-medium text-slate-600 hover:text-slate-900 sm:inline">{{ request.user.username }}</a>
+            <form method="post" action="{% url 'accounts:logout' %}">
+              {% csrf_token %}
+              <button type="submit" class="rounded-lg border border-slate-300 px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-50">Sign out</button>
+            </form>
+          {% endif %}
+        </div>
+      </header>
+
+      {% include "partials/messages.html" %}
+
+      <main id="main" class="flex-1 px-4 py-6 sm:px-6 lg:px-8">
+        {% block content %}{% endblock %}
+      </main>
+    </div>
+  </div>
+
+  <script src="{% static 'js/app.js' %}" defer></script>
+  {% block extra_js %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+
+{% block header_actions %}
+  <a href="{% url 'analytics:upload' %}" class="hidden text-sm text-slate-600 hover:text-slate-900 sm:inline">&larr; All datasets</a>
+{% endblock %}
+
+{% block content %}
+<div class="mx-auto max-w-6xl space-y-6">
+
+  <!-- Summary -->
+  <section class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+    <div class="flex flex-wrap items-start justify-between gap-4">
+      <div>
+        <h2 class="text-lg font-semibold text-slate-900">{{ dataset.name }}</h2>
+        <p class="mt-1 text-sm text-slate-500">{{ dataset.original_filename }} · uploaded {{ dataset.created_at|date:"j M Y, H:i" }}</p>
+      </div>
+      <div class="flex flex-wrap gap-2">
+        <a href="{% url 'analytics:dataset_download' dataset.pk 'cleaned' %}" class="rounded-lg bg-brand-600 px-3.5 py-2 text-sm font-medium text-white hover:bg-brand-700">Download cleaned CSV</a>
+        <a href="{% url 'analytics:dataset_download' dataset.pk 'original' %}" class="rounded-lg border border-slate-300 px-3.5 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">Download original</a>
+      </div>
+    </div>
+
+    <dl class="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
+      <div class="rounded-lg bg-slate-50 p-4"><dt class="text-xs uppercase tracking-wide text-slate-500">Rows uploaded</dt><dd class="mt-1 text-2xl font-semibold tabular-nums text-slate-900">{{ dataset.raw_row_count|floatformat:"0g" }}</dd></div>
+      <div class="rounded-lg bg-slate-50 p-4"><dt class="text-xs uppercase tracking-wide text-slate-500">Rows kept</dt><dd class="mt-1 text-2xl font-semibold tabular-nums text-slate-900">{{ dataset.clean_row_count|floatformat:"0g" }}</dd></div>
+      <div class="rounded-lg bg-slate-50 p-4"><dt class="text-xs uppercase tracking-wide text-slate-500">Customers</dt><dd class="mt-1 text-2xl font-semibold tabular-nums text-slate-900">{{ report.clean.customers|floatformat:"0g" }}</dd></div>
+      <div class="rounded-lg bg-slate-50 p-4"><dt class="text-xs uppercase tracking-wide text-slate-500">Invoices</dt><dd class="mt-1 text-2xl font-semibold tabular-nums text-slate-900">{{ report.clean.invoices|floatformat:"0g" }}</dd></div>
+    </dl>
+    <p class="mt-4 text-sm text-slate-600">
+      Date range: <strong>{{ report.clean.date_min|slice:":10" }}</strong> to <strong>{{ report.clean.date_max|slice:":10" }}</strong>
+      · {{ report.clean.countries }} countries · {{ report.clean.stock_codes|floatformat:"0g" }} products
+      · {{ report.clean.cancellation_rows|floatformat:"0g" }} cancellation lines kept
+      · {{ report.clean.rows_without_customer|floatformat:"0g" }} lines without a customer ID kept
+    </p>
+  </section>
+
+  <!-- Quality report -->
+  <section class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+    <h2 class="text-base font-semibold text-slate-900">Data quality report</h2>
+    <p class="mt-1 text-sm text-slate-600">What was found in the uploaded file, and what was done about it. Counts can overlap: one row may have several problems.</p>
+    <div class="mt-4 overflow-x-auto">
+      <table class="min-w-full text-sm">
+        <thead><tr class="border-b border-slate-200 text-left text-xs uppercase tracking-wide text-slate-500">
+          <th class="py-2 pr-4 font-medium">Check</th><th class="py-2 pr-4 text-right font-medium">Rows</th><th class="py-2 pr-4 text-right font-medium">% of file</th><th class="py-2 font-medium">Handling</th>
+        </tr></thead>
+        <tbody class="divide-y divide-slate-100">
+          {% for i in issues %}
+          <tr>
+            <td class="py-2.5 pr-4 text-slate-800">{{ i.label }}</td>
+            <td class="py-2.5 pr-4 text-right tabular-nums {% if i.count %}font-medium text-slate-900{% else %}text-slate-400{% endif %}">{{ i.count|floatformat:"0g" }}</td>
+            <td class="py-2.5 pr-4 text-right tabular-nums text-slate-500">{{ i.pct }}%</td>
+            <td class="py-2.5 text-slate-600">{% if i.count %}{{ i.handling }}{% else %}None found.{% endif %}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <h3 class="mt-8 text-sm font-semibold text-slate-900">Rows removed during cleaning</h3>
+    <p class="mt-1 text-sm text-slate-600">Each row is counted once, under the first rule that removed it. Total removed: <strong>{{ report.cleaning.rows_removed|floatformat:"0g" }}</strong> of {{ report.cleaning.rows_in|floatformat:"0g" }}.</p>
+    <ul class="mt-3 grid gap-x-8 gap-y-1 text-sm sm:grid-cols-2">
+      {% for d in dropped %}
+        <li class="flex justify-between border-b border-slate-100 py-1.5"><span class="text-slate-700">{{ d.label }}</span><span class="tabular-nums {% if d.count %}font-medium text-slate-900{% else %}text-slate-400{% endif %}">{{ d.count|floatformat:"0g" }}</span></li>
+      {% endfor %}
+    </ul>
+  </section>
+
+  <!-- Cleaning rules -->
+  <section class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+    <h2 class="text-base font-semibold text-slate-900">Cleaning rules applied</h2>
+    <p class="mt-1 text-sm text-slate-600">Rules run in this order. These are the exact rules the code uses.</p>
+    <ol class="mt-4 space-y-3">
+      {% for r in rules %}
+      <li class="flex gap-3 text-sm">
+        <span class="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-slate-100 text-xs font-semibold text-slate-600">{{ forloop.counter }}</span>
+        <div><p class="font-medium text-slate-900">{{ r.title }}</p><p class="text-slate-600">{{ r.description }}</p></div>
+      </li>
+      {% endfor %}
+    </ol>
+  </section>
+
+  <!-- Column mapping + preview -->
+  <section class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+    <h2 class="text-base font-semibold text-slate-900">Column mapping</h2>
+    <div class="mt-3 flex flex-wrap gap-2 text-xs">
+      {% for internal, original in mapping %}
+        <span class="rounded-full bg-slate-100 px-3 py-1 text-slate-700"><span class="font-medium">{{ original }}</span> &rarr; {{ internal }}</span>
+      {% endfor %}
+    </div>
+
+    <h2 class="mt-8 text-base font-semibold text-slate-900">Preview of the uploaded data</h2>
+    <p class="mt-1 text-sm text-slate-600">First {{ dataset.preview.rows|length }} rows, before cleaning.</p>
+    <div class="mt-3 overflow-x-auto rounded-lg border border-slate-200">
+      <table class="min-w-full text-xs">
+        <thead class="bg-slate-50"><tr>{% for c in dataset.preview.columns %}<th class="whitespace-nowrap px-3 py-2 text-left font-medium text-slate-600">{{ c }}</th>{% endfor %}</tr></thead>
+        <tbody class="divide-y divide-slate-100">
+          {% for row in dataset.preview.rows %}<tr>{% for cell in row %}<td class="whitespace-nowrap px-3 py-1.5 text-slate-700">{{ cell }}</td>{% endfor %}</tr>{% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- Danger zone -->
+  <section class="rounded-xl border border-red-200 bg-white p-6 shadow-sm">
+    <h2 class="text-base font-semibold text-red-700">Delete dataset</h2>
+    <p class="mt-1 text-sm text-slate-600">Removes this dataset, its customers, transactions and both files. This cannot be undone.</p>
+    <form method="post" action="{% url 'analytics:dataset_delete' dataset.pk %}" class="mt-4" onsubmit="return confirm('Delete this dataset permanently?');">
+      {% csrf_token %}
+      <button type="submit" class="rounded-lg border border-red-300 px-4 py-2 text-sm font-medium text-red-700 hover:bg-red-50">Delete dataset</button>
+    </form>
+  </section>
+</div>
+{% endblock %}

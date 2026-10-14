@@ -1,0 +1,11 @@
+{% extends "accounts/auth_base.html" %}
+{% block title %}Create account{% endblock %}
+{% block heading %}Create your account{% endblock %}
+{% block content %}
+<form method="post" class="mt-6 space-y-5" novalidate>
+  {% csrf_token %}
+  {% for field in form %}{% include "partials/form_field.html" %}{% endfor %}
+  <button type="submit" class="w-full rounded-lg bg-brand-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm transition hover:bg-brand-700 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2">Create account</button>
+</form>
+{% endblock %}
+{% block below %}<p class="mt-6 text-sm text-slate-600">Already registered? <a class="font-medium text-brand-600 hover:underline" href="{% url 'accounts:login' %}">Sign in</a></p>{% endblock %}

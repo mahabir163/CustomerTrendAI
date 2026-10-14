@@ -1,0 +1,17 @@
+{% extends "accounts/auth_base.html" %}
+{% block heading %}Sign in{% endblock %}
+{% block content %}
+<form method="post" class="mt-6 space-y-5" novalidate>
+  {% csrf_token %}
+  {% if form.non_field_errors %}
+    <div class="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700" role="alert">{{ form.non_field_errors.0 }}</div>
+  {% endif %}
+  {% for field in form %}{% include "partials/form_field.html" %}{% endfor %}
+  <input type="hidden" name="next" value="{{ next }}">
+  <button type="submit" class="w-full rounded-lg bg-brand-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm transition hover:bg-brand-700 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2">Sign in</button>
+  <p class="text-center text-sm"><a class="text-brand-600 hover:underline" href="{% url 'accounts:password_reset' %}">Forgot your password?</a></p>
+</form>
+{% endblock %}
+{% block below %}
+  {% if allow_registration %}<p class="mt-6 text-sm text-slate-600">New here? <a class="font-medium text-brand-600 hover:underline" href="{% url 'accounts:register' %}">Create an account</a></p>{% endif %}
+{% endblock %}

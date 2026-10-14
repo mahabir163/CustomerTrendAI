@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="mx-auto max-w-3xl rounded-xl border border-slate-200 bg-white p-8 shadow-sm">
+  <div class="flex h-12 w-12 items-center justify-center rounded-lg bg-brand-50 text-brand-600">
+    <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 16v4h16v-4M12 4v12M7 9l5-5 5 5"/></svg>
+  </div>
+
+  {% if dataset_count %}
+    <h2 class="mt-4 text-xl font-semibold text-slate-900">Your data is ready</h2>
+    <p class="mt-2 text-sm leading-6 text-slate-600">
+      You have {{ dataset_count }} dataset{{ dataset_count|pluralize }} imported. The KPI cards and charts for this page are built in Phase 3.
+      Nothing here is sample data.
+    </p>
+    <ul class="mt-5 divide-y divide-slate-100 rounded-lg border border-slate-200 text-sm">
+      {% for d in datasets %}
+      <li class="flex items-center justify-between px-4 py-3">
+        <a class="font-medium text-brand-600 hover:underline" href="{{ d.get_absolute_url }}">{{ d.name }}</a>
+        <span class="text-slate-500">{{ d.clean_row_count|floatformat:"0g" }} rows</span>
+      </li>
+      {% endfor %}
+    </ul>
+    <a href="{% url 'analytics:upload' %}" class="mt-6 inline-flex rounded-lg border border-slate-300 px-4 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50">Upload another dataset</a>
+  {% else %}
+    <h2 class="mt-4 text-xl font-semibold text-slate-900">No dataset yet</h2>
+    <p class="mt-2 text-sm leading-6 text-slate-600">
+      Revenue, orders, customers and trend charts will appear here once you upload a transaction dataset.
+      Nothing on this page is sample data.
+    </p>
+    <ol class="mt-6 space-y-3 text-sm text-slate-700">
+      <li class="flex gap-3"><span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-slate-100 text-xs font-semibold">1</span>Upload a CSV or Excel file (the UCI Online Retail dataset is supported first).</li>
+      <li class="flex gap-3"><span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-slate-100 text-xs font-semibold">2</span>Review the data quality report and cleaning rules.</li>
+      <li class="flex gap-3"><span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-slate-100 text-xs font-semibold">3</span>Explore KPIs, segments and trends, then ask the AI assistant questions.</li>
+    </ol>
+    <a href="{% url 'analytics:upload' %}" class="mt-8 inline-flex items-center rounded-lg bg-brand-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm transition hover:bg-brand-700 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2">Go to Data Upload</a>
+  {% endif %}
+</section>
+{% endblock %}

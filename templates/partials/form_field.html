@@ -1,0 +1,7 @@
+{# Renders one form field: label, widget (already Tailwind-styled by TailwindFormMixin), help text, errors. #}
+<div class="space-y-1.5">
+  <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-slate-700">{{ field.label }}</label>
+  {{ field }}
+  {% if field.help_text %}<p class="text-xs text-slate-500">{{ field.help_text|safe }}</p>{% endif %}
+  {% for error in field.errors %}<p class="text-sm text-red-600" role="alert">{{ error }}</p>{% endfor %}
+</div>
