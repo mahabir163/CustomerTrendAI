@@ -34,7 +34,10 @@ if not SECRET_KEY:
     else:
         raise RuntimeError("DJANGO_SECRET_KEY must be set when DJANGO_DEBUG is false.")
 
-ALLOWED_HOSTS = env_list("DJANGO_ALLOWED_HOSTS", "localhost,127.0.0.1", "customertrendai-1.onrender.com")
+ALLOWED_HOSTS = env_list(
+    "DJANGO_ALLOWED_HOSTS",
+    "localhost,127.0.0.1,customertrendai-1.onrender.com"
+)
 CSRF_TRUSTED_ORIGINS = env_list("DJANGO_CSRF_TRUSTED_ORIGINS")
 
 # --- Applications -------------------------------------------------------
